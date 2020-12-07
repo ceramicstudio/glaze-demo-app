@@ -1,4 +1,4 @@
-import type { Doctype } from '@ceramicnetwork/ceramic-common'
+import type { Doctype } from '@ceramicnetwork/common'
 import AppBar from '@material-ui/core/AppBar'
 import Button from '@material-ui/core/Button'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -279,6 +279,7 @@ function DraftScreen({ save, status }: DraftScreenProps) {
       <Paper elevation={5}>
         <TextareaAutosize
           className={classes.noteTextarea}
+          disabled={status === 'saving'}
           placeholder="Note contents..."
           ref={textRef}
           rowsMin={10}
@@ -320,6 +321,7 @@ function NoteScreen({ note, save }: NoteScreenProps) {
       <Paper elevation={5}>
         <TextareaAutosize
           className={classes.noteTextarea}
+          disabled={note.status === 'saving'}
           defaultValue={doc.content.text}
           placeholder="Note contents..."
           ref={textRef}

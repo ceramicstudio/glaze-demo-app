@@ -1,8 +1,9 @@
-import type { Doctype } from '@ceramicnetwork/ceramic-common'
-import type Ceramic from '@ceramicnetwork/ceramic-http-client'
-import type { IDXWeb } from '@ceramicstudio/idx-web'
+import type { Doctype } from '@ceramicnetwork/common'
+import type Ceramic from '@ceramicnetwork/http-client'
+import type { IDX } from '@ceramicstudio/idx'
 import { useCallback, useReducer } from 'react'
 
+import { schemas } from './config.json'
 import { getIDX } from './idx'
 import type { IDXInit, NotesList } from './idx'
 
@@ -12,7 +13,7 @@ type NoteLoadingStatus = 'init' | 'loading' | 'loading failed'
 type NoteSavingStatus = 'loaded' | 'saving' | 'saving failed' | 'saved'
 
 type UnauthenticatedState = { status: AuthStatus }
-type AuthenticatedState = { status: 'done'; ceramic: Ceramic; idx: IDXWeb }
+type AuthenticatedState = { status: 'done'; ceramic: Ceramic; idx: IDX }
 export type AuthState = UnauthenticatedState | AuthenticatedState
 
 type NavDefaultState = { type: 'default' }
@@ -229,7 +230,8 @@ export function useApp() {
       const { ceramic, idx } = state.auth as AuthenticatedState
       Promise.all([
         ceramic.createDocument('tile', {
-          content: { date: new Date().toUTCString(), text },
+          content: { date: new Date().toISOString(), text },
+          metadata: { controllers: [idx.id], schema: schemas.Note },
         }),
         idx.get<NotesList>('notes'),
       ])
@@ -237,7 +239,7 @@ export function useApp() {
           const notes = notesList?.notes ?? []
           return idx
             .set('notes', {
-              notes: [{ id: doc.id.toUrl('base36'), title }, ...notes],
+              notes: [{ id: doc.id.toUrl(), title }, ...notes],
             })
             .then(() => {
               const docID = doc.id.toString()

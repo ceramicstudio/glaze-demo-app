@@ -1,8 +1,10 @@
 const { writeFile } = require('fs').promises
-const Ceramic = require('@ceramicnetwork/ceramic-http-client').default
+const Ceramic = require('@ceramicnetwork/http-client').default
 const { createDefinition, publishSchema } = require('@ceramicstudio/idx-tools')
-const Wallet = require('identity-wallet').default
+const { Ed25519Provider } = require('key-did-provider-ed25519')
 const fromString = require('uint8arrays/from-string')
+
+const CERAMIC_URL = 'https://ceramic-dev.3boxlabs.com'
 
 const NoteSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -57,44 +59,34 @@ const NotesListSchema = {
 }
 
 async function run() {
+  // The seed must be provided as an environment variable
+  const seed = fromString(process.env.SEED, 'base16')
   // Connect to the local Ceramic node
-  const ceramic = new Ceramic('https://ceramic.3boxlabs.com')
-
-  // Create a wallet and set it as the DID provider to author documents
-  const wallet = await Wallet.create({
-    ceramic,
-    // The seed must be provided as an environment variable
-    seed: fromString(process.env.SEED, 'base16'),
-    getPermission() {
-      // This will grant all permission requests
-      return Promise.resolve([])
-    },
-    // IDX is not needed for this wallet
-    disableIDX: true,
-  })
-  await ceramic.setDIDProvider(wallet.getDidProvider())
+  const ceramic = new Ceramic(CERAMIC_URL)
+  // Authenticate the Ceramic instance with the provider
+  await ceramic.setDIDProvider(new Ed25519Provider(seed))
 
   // Publish the two schemas
-  const [noteSchemaID, notesListSchemaID] = await Promise.all([
+  const [noteSchema, notesListSchema] = await Promise.all([
     publishSchema(ceramic, { content: NoteSchema }),
     publishSchema(ceramic, { content: NotesListSchema }),
   ])
 
   // Create the definition using the created schema ID
-  const notesID = await createDefinition(ceramic, {
+  const notesDefinition = await createDefinition(ceramic, {
     name: 'notes',
     description: 'Simple text notes',
-    schema: notesListSchemaID.toUrl('base36'),
+    schema: notesListSchema.versionId.toUrl(),
   })
 
   // Write config to JSON file
   const config = {
     definitions: {
-      notes: notesID.toString(),
+      notes: notesDefinition.id.toString(),
     },
     schemas: {
-      Note: noteSchemaID.toUrl('base36'),
-      NotesList: notesListSchemaID.toUrl('base36'),
+      Note: noteSchema.versionId.toUrl(),
+      NotesList: notesListSchema.versionId.toUrl(),
     },
   }
   await writeFile('./src/config.json', JSON.stringify(config))
