@@ -4,7 +4,7 @@ const { createDefinition, publishSchema } = require('@ceramicstudio/idx-tools')
 const { Ed25519Provider } = require('key-did-provider-ed25519')
 const fromString = require('uint8arrays/from-string')
 
-const CERAMIC_URL = 'https://ceramic-dev.3boxlabs.com'
+const CERAMIC_URL = 'http://localhost:7007'
 
 const NoteSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -76,7 +76,7 @@ async function run() {
   const notesDefinition = await createDefinition(ceramic, {
     name: 'notes',
     description: 'Simple text notes',
-    schema: notesListSchema.versionId.toUrl(),
+    schema: notesListSchema.commitId.toUrl(),
   })
 
   // Write config to JSON file
@@ -85,8 +85,8 @@ async function run() {
       notes: notesDefinition.id.toString(),
     },
     schemas: {
-      Note: noteSchema.versionId.toUrl(),
-      NotesList: notesListSchema.versionId.toUrl(),
+      Note: noteSchema.commitId.toUrl(),
+      NotesList: notesListSchema.commitId.toUrl(),
     },
   }
   await writeFile('./src/config.json', JSON.stringify(config))

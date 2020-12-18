@@ -34,7 +34,9 @@ import MenuIcon from '@material-ui/icons/Menu'
 import NoteIcon from '@material-ui/icons/Note'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
 import UploadIcon from '@material-ui/icons/CloudUpload'
+import { randomBytes } from '@stablelib/random'
 import React, { useRef, useState } from 'react'
+import { fromString, toString } from 'uint8arrays'
 
 import { useApp } from './state'
 import type {
@@ -95,7 +97,6 @@ const useStyles = makeStyles((theme: Theme) =>
 )
 
 type NotesListProps = {
-  authenticate: () => void
   deleteDraft: () => void
   openDraft: () => void
   openNote: (docID: string) => void
@@ -103,7 +104,6 @@ type NotesListProps = {
 }
 
 function NotesList({
-  authenticate,
   deleteDraft,
   openDraft,
   openNote,
@@ -147,7 +147,7 @@ function NotesList({
     )
   } else {
     draft = (
-      <ListItem button onClick={() => authenticate()}>
+      <ListItem>
         <ListItemIcon>
           <NoteAddIcon />
         </ListItemIcon>
@@ -197,11 +197,14 @@ function NotesList({
 }
 
 type AuthenticateProps = {
-  authenticate: () => void
+  authenticate: (seed: Uint8Array) => void
   state: AuthState
 }
 
 function AuthenticateScreen({ authenticate, state }: AuthenticateProps) {
+  const [seed, setSeed] = useState('')
+  const isLoading = state.status === 'loading'
+
   return state.status === 'done' ? (
     <Typography>Authenticated with ID {state.idx.id}</Typography>
   ) : (
@@ -210,12 +213,31 @@ function AuthenticateScreen({ authenticate, state }: AuthenticateProps) {
         You need to authenticate to load your existing notes and create new
         ones.
       </Typography>
+      <div>
+        <TextField
+          autoFocus
+          disabled={isLoading}
+          fullWidth
+          id="seed"
+          label="Seed"
+          onChange={(event) => setSeed(event.target.value)}
+          placeholder="base16-encoded string of 32 bytes length"
+          type="text"
+          value={seed}
+        />
+      </div>
       <Button
         color="primary"
-        disabled={state.status === 'loading'}
-        onClick={authenticate}
+        disabled={seed === '' || isLoading}
+        onClick={() => authenticate(fromString(seed, 'base16'))}
         variant="contained">
         Authenticate
+      </Button>
+      <Button
+        color="primary"
+        disabled={isLoading}
+        onClick={() => setSeed(toString(randomBytes(32), 'base16'))}>
+        Generate random seed
       </Button>
     </>
   )
@@ -355,7 +377,6 @@ export default function App() {
     <div>
       <div className={classes.toolbar} />
       <NotesList
-        authenticate={app.authenticate}
         deleteDraft={app.deleteDraft}
         openDraft={app.openDraft}
         openNote={app.openNote}

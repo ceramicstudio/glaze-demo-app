@@ -203,9 +203,9 @@ export function useApp() {
     notes: {},
   })
 
-  const authenticate = useCallback(() => {
+  const authenticate = useCallback((seed: Uint8Array) => {
     dispatch({ type: 'auth', status: 'loading' })
-    getIDX().then(
+    getIDX(seed).then(
       (init) => {
         dispatch({ type: 'auth success', ...init })
       },
@@ -280,7 +280,7 @@ export function useApp() {
   const saveNote = useCallback((doc: Doctype, text: string) => {
     const docID = doc.id.toString()
     dispatch({ type: 'note saving status', docID, status: 'saving' })
-    doc.change({ content: { date: new Date().toUTCString(), text } }).then(
+    doc.change({ content: { date: new Date().toISOString(), text } }).then(
       () => {
         dispatch({ type: 'note saving status', docID, status: 'saved' })
       },

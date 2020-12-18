@@ -1,15 +1,10 @@
 import Ceramic from '@ceramicnetwork/http-client'
 import { IDX } from '@ceramicstudio/idx'
-import { EthereumAuthProvider, ThreeIdConnect } from '3id-connect'
-import Web3Modal from 'web3modal'
+import { Ed25519Provider } from 'key-did-provider-ed25519'
 
 import { definitions } from './config.json'
 
-const CERAMIC_URL = 'https://ceramic-dev.3boxlabs.com'
-
-// @ts-ignore argument
-const threeID = new ThreeIdConnect()
-const web3modal = new Web3Modal({ network: 'mainnet', cacheProvider: true })
+const CERAMIC_URL = 'http://localhost:7007'
 
 export type NoteItem = {
   id: string
@@ -23,17 +18,10 @@ export type IDXInit = NotesList & {
   idx: IDX
 }
 
-export async function getIDX(): Promise<IDXInit> {
-  // Connect an Ethereum provider
-  const ethereumProvider = await web3modal.connect()
-  const { result } = await ethereumProvider.send('eth_requestAccounts')
-
-  // Authenticate using the Ethereum provider in 3ID Connect
-  await threeID.connect(new EthereumAuthProvider(ethereumProvider, result[0]))
-
+export async function getIDX(seed: Uint8Array): Promise<IDXInit> {
   // Create the Ceramic instance and inject provider
   const ceramic = new Ceramic(CERAMIC_URL)
-  await ceramic.setDIDProvider(threeID.getDidProvider())
+  await ceramic.setDIDProvider(new Ed25519Provider(seed))
 
   // Create the IDX instance with the definitions aliases from the config
   const idx = new IDX({ ceramic, aliases: definitions })
