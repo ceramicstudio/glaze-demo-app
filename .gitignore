@@ -11,6 +11,9 @@
 # production
 /build
 
+# ceramic
+.pinning.store
+
 # misc
 .DS_Store
 .env.local

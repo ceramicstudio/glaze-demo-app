@@ -1,6 +1,6 @@
 # IDX demo app
 
-Example Web app using [IDX](https://idx.xyz)
+Example Web app using [IDX](https://idx.xyz) - [read the blog post](https://blog.ceramic.network/how-to-build-a-simple-notes-app-with-idx/)
 
 ## Available Scripts
 
