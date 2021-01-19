@@ -1,22 +1,22 @@
 {
   "files": {
     "main.css": "/idx-demo-app/static/css/main.6dea0f05.chunk.css",
-    "main.js": "/idx-demo-app/static/js/main.b4dbafe9.chunk.js",
-    "main.js.map": "/idx-demo-app/static/js/main.b4dbafe9.chunk.js.map",
+    "main.js": "/idx-demo-app/static/js/main.3e42d54a.chunk.js",
+    "main.js.map": "/idx-demo-app/static/js/main.3e42d54a.chunk.js.map",
     "runtime-main.js": "/idx-demo-app/static/js/runtime-main.89e5982e.js",
     "runtime-main.js.map": "/idx-demo-app/static/js/runtime-main.89e5982e.js.map",
-    "static/js/2.999ca665.chunk.js": "/idx-demo-app/static/js/2.999ca665.chunk.js",
-    "static/js/2.999ca665.chunk.js.map": "/idx-demo-app/static/js/2.999ca665.chunk.js.map",
+    "static/js/2.4a976986.chunk.js": "/idx-demo-app/static/js/2.4a976986.chunk.js",
+    "static/js/2.4a976986.chunk.js.map": "/idx-demo-app/static/js/2.4a976986.chunk.js.map",
     "static/js/3.15e11ae3.chunk.js": "/idx-demo-app/static/js/3.15e11ae3.chunk.js",
     "static/js/3.15e11ae3.chunk.js.map": "/idx-demo-app/static/js/3.15e11ae3.chunk.js.map",
     "index.html": "/idx-demo-app/index.html",
     "static/css/main.6dea0f05.chunk.css.map": "/idx-demo-app/static/css/main.6dea0f05.chunk.css.map",
-    "static/js/2.999ca665.chunk.js.LICENSE.txt": "/idx-demo-app/static/js/2.999ca665.chunk.js.LICENSE.txt"
+    "static/js/2.4a976986.chunk.js.LICENSE.txt": "/idx-demo-app/static/js/2.4a976986.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.89e5982e.js",
-    "static/js/2.999ca665.chunk.js",
+    "static/js/2.4a976986.chunk.js",
     "static/css/main.6dea0f05.chunk.css",
-    "static/js/main.b4dbafe9.chunk.js"
+    "static/js/main.3e42d54a.chunk.js"
   ]
 }
