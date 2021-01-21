@@ -14,9 +14,9 @@
     "deploy": "gh-pages -d build"
   },
   "dependencies": {
-    "@ceramicnetwork/cli": "^0.20.0",
+    "@ceramicnetwork/cli": "^0.20.1",
     "@ceramicnetwork/common": "^0.15.7",
-    "@ceramicnetwork/http-client": "^0.9.3",
+    "@ceramicnetwork/http-client": "^0.9.4",
     "@ceramicstudio/idx": "^0.7.0",
     "@ceramicstudio/idx-tools": "^0.7.0",
     "@material-ui/core": "^4.11.2",
@@ -24,9 +24,9 @@
     "@stablelib/random": "^1.0.0",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.3",
-    "@testing-library/user-event": "^12.6.0",
+    "@testing-library/user-event": "^12.6.1",
     "@types/jest": "^26.0.20",
-    "@types/node": "^14.14.21",
+    "@types/node": "^14.14.22",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "gh-pages": "^3.1.0",
