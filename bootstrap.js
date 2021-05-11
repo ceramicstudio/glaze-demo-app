@@ -3,6 +3,9 @@ const Ceramic = require('@ceramicnetwork/http-client').default
 const { createDefinition, publishSchema } = require('@ceramicstudio/idx-tools')
 const { Ed25519Provider } = require('key-did-provider-ed25519')
 const fromString = require('uint8arrays/from-string')
+const KeyDidResolver = require('key-did-resolver').default;
+const ThreeIdResolver = require('@ceramicnetwork/3id-did-resolver').default;
+const DID = require('dids').DID
 
 const CERAMIC_URL = 'http://localhost:7007'
 
@@ -64,7 +67,18 @@ async function run() {
   // Connect to the local Ceramic node
   const ceramic = new Ceramic(CERAMIC_URL)
   // Authenticate the Ceramic instance with the provider
-  await ceramic.setDIDProvider(new Ed25519Provider(seed))
+  const keyDidResolver = KeyDidResolver.getResolver()
+  const threeIdResolver = ThreeIdResolver.getResolver(ceramic)
+  const resolverRegistry = {
+    ...threeIdResolver,
+    ...keyDidResolver,
+  }
+  const did = new DID({
+    provider: new Ed25519Provider(seed),
+    resolver: resolverRegistry,
+  })
+  await did.authenticate()
+  await ceramic.setDID(did)
 
   // Publish the two schemas
   const [noteSchema, notesListSchema] = await Promise.all([

@@ -1,4 +1,3 @@
-import type { Doctype } from '@ceramicnetwork/common'
 import AppBar from '@material-ui/core/AppBar'
 import Button from '@material-ui/core/Button'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -46,6 +45,7 @@ import type {
   State,
   StoredNote,
 } from './state'
+import {TileDocument} from "@ceramicnetwork/stream-tile";
 
 const drawerWidth = 300
 
@@ -322,7 +322,7 @@ function DraftScreen({ save, status }: DraftScreenProps) {
 
 type NoteScreenProps = {
   note: IndexLoadedNote | StoredNote
-  save: (doc: Doctype, text: string) => void
+  save: (doc: TileDocument, text: string) => void
 }
 
 function NoteScreen({ note, save }: NoteScreenProps) {
