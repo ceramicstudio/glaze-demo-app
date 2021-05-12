@@ -1,7 +1,7 @@
-import type { Doctype } from '@ceramicnetwork/common'
 import type Ceramic from '@ceramicnetwork/http-client'
 import type { IDX } from '@ceramicstudio/idx'
 import { useCallback, useReducer } from 'react'
+import { TileDocument } from '@ceramicnetwork/stream-tile';
 
 import { schemas } from './config.json'
 import { getIDX } from './idx'
@@ -24,7 +24,7 @@ export type IndexLoadedNote = { status: NoteLoadingStatus; title: string }
 export type StoredNote = {
   status: NoteSavingStatus
   title: string
-  doc: Doctype
+  doc: TileDocument
 }
 
 type Store = {
@@ -52,9 +52,9 @@ type DraftSavedAction = {
   type: 'draft saved'
   title: string
   docID: string
-  doc: Doctype
+  doc: TileDocument
 }
-type NoteLoadedAction = { type: 'note loaded'; docID: string; doc: Doctype }
+type NoteLoadedAction = { type: 'note loaded'; docID: string; doc: TileDocument }
 type NoteLoadingStatusAction = {
   type: 'note loading status'
   docID: string
@@ -229,10 +229,7 @@ export function useApp() {
       dispatch({ type: 'draft status', status: 'saving' })
       const { ceramic, idx } = state.auth as AuthenticatedState
       Promise.all([
-        ceramic.createDocument('tile', {
-          content: { date: new Date().toISOString(), text },
-          metadata: { controllers: [idx.id], schema: schemas.Note },
-        }),
+        TileDocument.create(ceramic, { date: new Date().toISOString(), text }, {controllers: [idx.id], schema: schemas.Note} ),
         idx.get<NotesList>('notes'),
       ])
         .then(([doc, notesList]) => {
@@ -260,34 +257,28 @@ export function useApp() {
 
       if (state.notes[docID] == null || state.notes[docID].status === 'init') {
         const { ceramic } = state.auth as AuthenticatedState
-        ceramic.loadDocument(docID).then(
-          (doc) => {
-            dispatch({ type: 'note loaded', docID, doc })
-          },
-          () => {
-            dispatch({
-              type: 'note loading status',
-              docID,
-              status: 'loading failed',
-            })
-          },
-        )
+        TileDocument.load<Record<string, unknown>>(ceramic, docID).then(stream => {
+          dispatch({ type: 'note loaded', docID, doc: stream })
+        }).catch(()=> {
+          dispatch({
+            type: 'note loading status',
+            docID,
+            status: 'loading failed',
+          })
+        })
       }
     },
     [state.auth, state.notes],
   )
 
-  const saveNote = useCallback((doc: Doctype, text: string) => {
+  const saveNote = useCallback((doc: TileDocument, text: string) => {
     const docID = doc.id.toString()
     dispatch({ type: 'note saving status', docID, status: 'saving' })
-    doc.change({ content: { date: new Date().toISOString(), text } }).then(
-      () => {
-        dispatch({ type: 'note saving status', docID, status: 'saved' })
-      },
-      () => {
-        dispatch({ type: 'note saving status', docID, status: 'saving failed' })
-      },
-    )
+    doc.update({ date: new Date().toISOString(), text }).then(() => {
+      dispatch({ type: 'note saving status', docID, status: 'saved' })
+    }).catch(() => {
+      dispatch({ type: 'note saving status', docID, status: 'saving failed' })
+    })
   }, [])
 
   return {
