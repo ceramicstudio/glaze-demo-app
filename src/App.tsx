@@ -1,3 +1,4 @@
+import type { TileDocument } from '@ceramicnetwork/stream-tile'
 import AppBar from '@material-ui/core/AppBar'
 import Button from '@material-ui/core/Button'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -37,6 +38,7 @@ import { randomBytes } from '@stablelib/random'
 import React, { useRef, useState } from 'react'
 import { fromString, toString } from 'uint8arrays'
 
+import type { Note } from './env'
 import { useApp } from './state'
 import type {
   AuthState,
@@ -45,7 +47,6 @@ import type {
   State,
   StoredNote,
 } from './state'
-import {TileDocument} from "@ceramicnetwork/stream-tile";
 
 const drawerWidth = 300
 
@@ -206,7 +207,7 @@ function AuthenticateScreen({ authenticate, state }: AuthenticateProps) {
   const isLoading = state.status === 'loading'
 
   return state.status === 'done' ? (
-    <Typography>Authenticated with ID {state.idx.id}</Typography>
+    <Typography>Authenticated with ID {state.store.id}</Typography>
   ) : (
     <>
       <Typography>
@@ -322,7 +323,7 @@ function DraftScreen({ save, status }: DraftScreenProps) {
 
 type NoteScreenProps = {
   note: IndexLoadedNote | StoredNote
-  save: (doc: TileDocument, text: string) => void
+  save: (doc: TileDocument<Note>, text: string) => void
 }
 
 function NoteScreen({ note, save }: NoteScreenProps) {
@@ -424,10 +425,13 @@ export default function App() {
             <MenuIcon />
           </IconButton>
           <Typography className={classes.title} noWrap variant="h6">
-            IDX demo notes app
+            Glaze demo notes app
           </Typography>
-          <Button color="inherit" href="https://idx.xyz" variant="outlined">
-            IDX
+          <Button
+            color="inherit"
+            href="https://developers.ceramic.network/"
+            variant="outlined">
+            Documentation
           </Button>
         </Toolbar>
       </AppBar>
