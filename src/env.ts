@@ -1,9 +1,9 @@
-import Ceramic from '@ceramicnetwork/http-client'
+import { CeramicClient } from '@ceramicnetwork/http-client'
 import { DataModel } from '@glazed/datamodel'
 import { DIDDataStore } from '@glazed/did-datastore'
 import { DID } from 'dids'
 import { Ed25519Provider } from 'key-did-provider-ed25519'
-import KeyResolver from 'key-did-resolver'
+import { getResolver } from 'key-did-resolver'
 
 import modelAliases from './model.json'
 
@@ -42,12 +42,12 @@ export async function getEnv(seed: Uint8Array): Promise<Env> {
   // Create and authenticate the DID
   const did = new DID({
     provider: new Ed25519Provider(seed),
-    resolver: KeyResolver.getResolver(),
+    resolver: getResolver(),
   })
   await did.authenticate()
 
   // Create the Ceramic instance and inject the DID
-  const ceramic = new Ceramic('http://localhost:7007')
+  const ceramic = new CeramicClient('http://localhost:7007')
   ceramic.did = did
 
   // Create the model and store
