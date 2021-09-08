@@ -245,11 +245,12 @@ function AuthenticateScreen({ authenticate, state }: AuthenticateProps) {
 }
 
 type DraftScreenProps = {
+  placeholder: string
   save: (title: string, text: string) => void
   status: DraftStatus
 }
 
-function DraftScreen({ save, status }: DraftScreenProps) {
+function DraftScreen({ placeholder, save, status }: DraftScreenProps) {
   const classes = useStyles()
   const [open, setOpen] = useState(false)
   const textRef = useRef<HTMLTextAreaElement>(null)
@@ -303,7 +304,7 @@ function DraftScreen({ save, status }: DraftScreenProps) {
         <TextareaAutosize
           className={classes.noteTextarea}
           disabled={status === 'saving'}
-          placeholder="Note contents..."
+          placeholder={placeholder}
           ref={textRef}
           rowsMin={10}
           rowsMax={20}
@@ -323,10 +324,11 @@ function DraftScreen({ save, status }: DraftScreenProps) {
 
 type NoteScreenProps = {
   note: IndexLoadedNote | StoredNote
+  placeholder: string
   save: (doc: TileDocument<Note>, text: string) => void
 }
 
-function NoteScreen({ note, save }: NoteScreenProps) {
+function NoteScreen({ note, placeholder, save }: NoteScreenProps) {
   const classes = useStyles()
   const textRef = useRef<HTMLTextAreaElement>(null)
 
@@ -346,7 +348,7 @@ function NoteScreen({ note, save }: NoteScreenProps) {
           className={classes.noteTextarea}
           disabled={note.status === 'saving'}
           defaultValue={doc.content.text}
-          placeholder="Note contents..."
+          placeholder={placeholder}
           ref={textRef}
           rowsMin={10}
           rowsMax={20}
@@ -390,7 +392,11 @@ export default function App() {
   switch (app.state.nav.type) {
     case 'draft':
       screen = (
-        <DraftScreen save={app.saveDraft} status={app.state.draftStatus} />
+        <DraftScreen
+          placeholder={app.state.placeholderText}
+          save={app.saveDraft}
+          status={app.state.draftStatus}
+        />
       )
       break
     case 'note':
@@ -398,6 +404,7 @@ export default function App() {
         <NoteScreen
           key={app.state.nav.docID}
           note={app.state.notes[app.state.nav.docID]}
+          placeholder={app.state.placeholderText}
           save={app.saveNote}
         />
       )

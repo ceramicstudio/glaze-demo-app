@@ -27,16 +27,18 @@ export type ModelTypes = {
   definitions: {
     notes: 'Notes'
   }
-  tiles: {}
+  tiles: {
+    placeholderNote: 'Note'
+  }
 }
 
 export type Context = {
-  ceramic: Ceramic
+  ceramic: CeramicClient
   model: DataModel<ModelTypes>
   store: DIDDataStore<ModelTypes>
 }
 
-export type Env = Context & NotesList
+export type Env = Context & NotesList & { placeholderText: string }
 
 export async function getEnv(seed: Uint8Array): Promise<Env> {
   // Create and authenticate the DID
@@ -51,11 +53,20 @@ export async function getEnv(seed: Uint8Array): Promise<Env> {
   ceramic.did = did
 
   // Create the model and store
-  const model = new DataModel({ ceramic, model: modelAliases })
+  const model = new DataModel<ModelTypes>({ ceramic, model: modelAliases })
   const store = new DIDDataStore({ ceramic, model })
 
-  // Load the existing notes
-  const notesList = await store.get('notes')
+  // Load the existing notes associated to the DID and the placeholder note
+  const [notesList, placeholderNote] = await Promise.all([
+    store.get('notes'),
+    model.loadTile('placeholderNote'),
+  ])
 
-  return { ceramic, model, store, notes: notesList?.notes ?? [] }
+  return {
+    ceramic,
+    model,
+    store,
+    notes: notesList?.notes ?? [],
+    placeholderText: placeholderNote?.content?.text ?? 'Note contents...',
+  }
 }

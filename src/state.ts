@@ -27,6 +27,7 @@ export type StoredNote = {
 type Store = {
   draftStatus: DraftStatus
   notes: Record<string, IndexLoadedNote | StoredNote>
+  placeholderText: string
 }
 type DefaultState = {
   auth: AuthState
@@ -102,12 +103,14 @@ function reducer(state: State, action: Action): State {
               acc[item.id] = { status: 'init', title: item.title }
               return acc
             }, {} as Record<string, IndexLoadedNote>),
+            placeholderText: action.placeholderText,
           }
         : {
             auth,
             draftStatus: 'unsaved',
             nav: { type: 'draft' },
             notes: {},
+            placeholderText: action.placeholderText,
           }
     }
     case 'nav reset':
@@ -143,6 +146,7 @@ function reducer(state: State, action: Action): State {
             doc: action.doc,
           },
         },
+        placeholderText: state.placeholderText,
       }
     }
     case 'nav note':
@@ -203,6 +207,7 @@ export function useApp() {
     draftStatus: 'unsaved',
     nav: { type: 'default' },
     notes: {},
+    placeholderText: '',
   })
 
   const authenticate = useCallback((seed: Uint8Array) => {

@@ -77,6 +77,13 @@ await manager.createDefinition('notes', {
   schema: manager.getSchemaURL(notesSchemaID),
 })
 
+// Create a Note with text that will be used as placeholder
+await manager.createTile(
+  'placeholderNote',
+  { text: 'This is a placeholder for the note contents...' },
+  { schema: manager.getSchemaURL(noteSchemaID) },
+)
+
 // Write model to JSON file
 const model = await manager.toPublished()
 await writeFile('./src/model.json', JSON.stringify(model))
