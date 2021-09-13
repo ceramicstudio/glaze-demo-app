@@ -1,3 +1,4 @@
+import type { TileDocument } from '@ceramicnetwork/stream-tile'
 import AppBar from '@material-ui/core/AppBar'
 import Button from '@material-ui/core/Button'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -37,6 +38,7 @@ import { randomBytes } from '@stablelib/random'
 import React, { useRef, useState } from 'react'
 import { fromString, toString } from 'uint8arrays'
 
+import type { Note } from './env'
 import { useApp } from './state'
 import type {
   AuthState,
@@ -45,7 +47,6 @@ import type {
   State,
   StoredNote,
 } from './state'
-import {TileDocument} from "@ceramicnetwork/stream-tile";
 
 const drawerWidth = 300
 
@@ -206,7 +207,7 @@ function AuthenticateScreen({ authenticate, state }: AuthenticateProps) {
   const isLoading = state.status === 'loading'
 
   return state.status === 'done' ? (
-    <Typography>Authenticated with ID {state.idx.id}</Typography>
+    <Typography>Authenticated with ID {state.store.id}</Typography>
   ) : (
     <>
       <Typography>
@@ -244,11 +245,12 @@ function AuthenticateScreen({ authenticate, state }: AuthenticateProps) {
 }
 
 type DraftScreenProps = {
+  placeholder: string
   save: (title: string, text: string) => void
   status: DraftStatus
 }
 
-function DraftScreen({ save, status }: DraftScreenProps) {
+function DraftScreen({ placeholder, save, status }: DraftScreenProps) {
   const classes = useStyles()
   const [open, setOpen] = useState(false)
   const textRef = useRef<HTMLTextAreaElement>(null)
@@ -302,7 +304,7 @@ function DraftScreen({ save, status }: DraftScreenProps) {
         <TextareaAutosize
           className={classes.noteTextarea}
           disabled={status === 'saving'}
-          placeholder="Note contents..."
+          placeholder={placeholder}
           ref={textRef}
           rowsMin={10}
           rowsMax={20}
@@ -322,10 +324,11 @@ function DraftScreen({ save, status }: DraftScreenProps) {
 
 type NoteScreenProps = {
   note: IndexLoadedNote | StoredNote
-  save: (doc: TileDocument, text: string) => void
+  placeholder: string
+  save: (doc: TileDocument<Note>, text: string) => void
 }
 
-function NoteScreen({ note, save }: NoteScreenProps) {
+function NoteScreen({ note, placeholder, save }: NoteScreenProps) {
   const classes = useStyles()
   const textRef = useRef<HTMLTextAreaElement>(null)
 
@@ -345,7 +348,7 @@ function NoteScreen({ note, save }: NoteScreenProps) {
           className={classes.noteTextarea}
           disabled={note.status === 'saving'}
           defaultValue={doc.content.text}
-          placeholder="Note contents..."
+          placeholder={placeholder}
           ref={textRef}
           rowsMin={10}
           rowsMax={20}
@@ -389,7 +392,11 @@ export default function App() {
   switch (app.state.nav.type) {
     case 'draft':
       screen = (
-        <DraftScreen save={app.saveDraft} status={app.state.draftStatus} />
+        <DraftScreen
+          placeholder={app.state.placeholderText}
+          save={app.saveDraft}
+          status={app.state.draftStatus}
+        />
       )
       break
     case 'note':
@@ -397,6 +404,7 @@ export default function App() {
         <NoteScreen
           key={app.state.nav.docID}
           note={app.state.notes[app.state.nav.docID]}
+          placeholder={app.state.placeholderText}
           save={app.saveNote}
         />
       )
@@ -424,10 +432,13 @@ export default function App() {
             <MenuIcon />
           </IconButton>
           <Typography className={classes.title} noWrap variant="h6">
-            IDX demo notes app
+            Glaze demo notes app
           </Typography>
-          <Button color="inherit" href="https://idx.xyz" variant="outlined">
-            IDX
+          <Button
+            color="inherit"
+            href="https://developers.ceramic.network/"
+            variant="outlined">
+            Documentation
           </Button>
         </Toolbar>
       </AppBar>
