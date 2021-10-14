@@ -6,6 +6,10 @@ import { Ed25519Provider } from 'key-did-provider-ed25519'
 import { getResolver } from 'key-did-resolver'
 import { fromString } from 'uint8arrays'
 
+if (!process.env.SEED) {
+  throw new Error('Missing SEED environment variable')
+}
+
 // The seed must be provided as an environment variable
 const seed = fromString(process.env.SEED, 'base16')
 // Create and authenticate the DID
@@ -85,7 +89,8 @@ await manager.createTile(
 )
 
 // Write model to JSON file
-const model = await manager.toPublished()
-await writeFile('./src/model.json', JSON.stringify(model))
-
-console.log('Model written to src/model.json file:', model)
+await writeFile(
+  new URL('model.json', import.meta.url),
+  JSON.stringify(manager.toJSON()),
+)
+console.log('Encoded model written to scripts/model.json file')
