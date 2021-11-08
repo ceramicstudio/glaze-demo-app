@@ -1,39 +1,36 @@
 import type { TileDocument } from '@ceramicnetwork/stream-tile'
-import AppBar from '@material-ui/core/AppBar'
-import Button from '@material-ui/core/Button'
-import CssBaseline from '@material-ui/core/CssBaseline'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import Divider from '@material-ui/core/Divider'
-import Drawer from '@material-ui/core/Drawer'
-import Hidden from '@material-ui/core/Hidden'
-import IconButton from '@material-ui/core/IconButton'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
-import ListItemText from '@material-ui/core/ListItemText'
-import Paper from '@material-ui/core/Paper'
-import TextareaAutosize from '@material-ui/core/TextareaAutosize'
-import TextField from '@material-ui/core/TextField'
-import Toolbar from '@material-ui/core/Toolbar'
-import Typography from '@material-ui/core/Typography'
-import {
-  makeStyles,
-  useTheme,
-  Theme,
-  createStyles,
-} from '@material-ui/core/styles'
-import DownloadIcon from '@material-ui/icons/CloudDownload'
-import DeleteIcon from '@material-ui/icons/Delete'
-import EditIcon from '@material-ui/icons/Edit'
-import ErrorIcon from '@material-ui/icons/ErrorOutline'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import MenuIcon from '@material-ui/icons/Menu'
-import NoteIcon from '@material-ui/icons/Note'
-import NoteAddIcon from '@material-ui/icons/NoteAdd'
-import UploadIcon from '@material-ui/icons/CloudUpload'
+import { styled } from '@mui/material/styles'
+import AppBar from '@mui/material/AppBar'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import CssBaseline from '@mui/material/CssBaseline'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import Divider from '@mui/material/Divider'
+import Drawer from '@mui/material/Drawer'
+import IconButton from '@mui/material/IconButton'
+import List from '@mui/material/List'
+import ListItem from '@mui/material/ListItem'
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction'
+import ListItemText from '@mui/material/ListItemText'
+import Paper from '@mui/material/Paper'
+import TextareaAutosize from '@mui/material/TextareaAutosize'
+import TextField from '@mui/material/TextField'
+import Toolbar from '@mui/material/Toolbar'
+import Typography from '@mui/material/Typography'
+import type { Theme } from '@mui/material/styles'
+import DownloadIcon from '@mui/icons-material/CloudDownload'
+import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
+import ErrorIcon from '@mui/icons-material/ErrorOutline'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import LogoutIcon from '@mui/icons-material/Logout'
+import MenuIcon from '@mui/icons-material/Menu'
+import NoteIcon from '@mui/icons-material/Note'
+import NoteAddIcon from '@mui/icons-material/NoteAdd'
+import UploadIcon from '@mui/icons-material/CloudUpload'
 import { randomBytes } from '@stablelib/random'
 import React, { useRef, useState } from 'react'
 import { fromString, toString } from 'uint8arrays'
@@ -48,54 +45,33 @@ import type {
   StoredNote,
 } from './state'
 
+const PREFIX = 'App'
+const classes = {
+  title: `${PREFIX}-title`,
+  noteSaveButton: `${PREFIX}-noteSaveButton`,
+  noteTextarea: `${PREFIX}-noteTextarea`,
+}
+
 const drawerWidth = 300
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      display: 'flex',
-    },
-    drawer: {
-      [theme.breakpoints.up('sm')]: {
-        width: drawerWidth,
-        flexShrink: 0,
-      },
-    },
-    appBar: {
-      [theme.breakpoints.up('sm')]: {
-        width: `calc(100% - ${drawerWidth}px)`,
-        marginLeft: drawerWidth,
-      },
-    },
-    menuButton: {
-      marginRight: theme.spacing(2),
-      [theme.breakpoints.up('sm')]: {
-        display: 'none',
-      },
-    },
-    // necessary for content to be below app bar
-    toolbar: theme.mixins.toolbar,
-    drawerPaper: {
-      width: drawerWidth,
-    },
-    content: {
-      flexGrow: 1,
-      padding: theme.spacing(3),
-    },
-    title: {
-      flexGrow: 1,
-    },
-    noteSaveButton: {
-      marginTop: theme.spacing(2),
-    },
-    noteTextarea: {
-      border: 0,
-      fontSize: theme.typography.pxToRem(18),
-      padding: theme.spacing(2),
-      width: '100%',
-    },
-  }),
-)
+const Root = styled('div')(({ theme }: { theme: Theme }) => ({
+  display: 'flex',
+
+  [`& .${classes.title}`]: {
+    flexGrow: 1,
+  },
+
+  [`& .${classes.noteSaveButton}`]: {
+    marginTop: theme.spacing(2),
+  },
+
+  [`& .${classes.noteTextarea}`]: {
+    border: 0,
+    fontSize: theme.typography.pxToRem(18),
+    padding: theme.spacing(2),
+    width: '100%',
+  },
+}))
 
 type NotesListProps = {
   deleteDraft: () => void
@@ -131,7 +107,8 @@ function NotesList({
           <IconButton
             edge="end"
             aria-label="delete"
-            onClick={() => deleteDraft()}>
+            onClick={() => deleteDraft()}
+            size="large">
             <DeleteIcon />
           </IconButton>
         </ListItemSecondaryAction>
@@ -214,7 +191,7 @@ function AuthenticateScreen({ authenticate, state }: AuthenticateProps) {
         You need to authenticate to load your existing notes and create new
         ones.
       </Typography>
-      <div>
+      <Root>
         <TextField
           autoFocus
           disabled={isLoading}
@@ -225,8 +202,9 @@ function AuthenticateScreen({ authenticate, state }: AuthenticateProps) {
           placeholder="base16-encoded string of 32 bytes length"
           type="text"
           value={seed}
+          variant="standard"
         />
-      </div>
+      </Root>
       <Button
         color="primary"
         disabled={seed === '' || isLoading}
@@ -251,7 +229,6 @@ type DraftScreenProps = {
 }
 
 function DraftScreen({ placeholder, save, status }: DraftScreenProps) {
-  const classes = useStyles()
   const [open, setOpen] = useState(false)
   const textRef = useRef<HTMLTextAreaElement>(null)
   const titleRef = useRef<HTMLInputElement>(null)
@@ -288,6 +265,7 @@ function DraftScreen({ placeholder, save, status }: DraftScreenProps) {
             label="Note title"
             inputRef={titleRef}
             type="text"
+            variant="standard"
             fullWidth
           />
         </DialogContent>
@@ -306,8 +284,8 @@ function DraftScreen({ placeholder, save, status }: DraftScreenProps) {
           disabled={status === 'saving'}
           placeholder={placeholder}
           ref={textRef}
-          rowsMin={10}
-          rowsMax={20}
+          minRows={10}
+          maxRows={20}
         />
       </Paper>
       <Button
@@ -329,7 +307,6 @@ type NoteScreenProps = {
 }
 
 function NoteScreen({ note, placeholder, save }: NoteScreenProps) {
-  const classes = useStyles()
   const textRef = useRef<HTMLTextAreaElement>(null)
 
   if (note.status === 'loading failed') {
@@ -350,8 +327,8 @@ function NoteScreen({ note, placeholder, save }: NoteScreenProps) {
           defaultValue={doc.content.text}
           placeholder={placeholder}
           ref={textRef}
-          rowsMin={10}
-          rowsMax={20}
+          minRows={10}
+          maxRows={20}
         />
       </Paper>
       <Button
@@ -368,24 +345,28 @@ function NoteScreen({ note, placeholder, save }: NoteScreenProps) {
 
 export default function App() {
   const app = useApp()
-  const classes = useStyles()
-  const theme = useTheme()
-  const [mobileOpen, setMobileOpen] = useState(false)
 
+  const [mobileOpen, setMobileOpen] = useState(false)
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
   }
 
   const drawer = (
-    <div>
-      <div className={classes.toolbar} />
+    <>
+      <Toolbar>
+        <Button
+          href="https://developers.ceramic.network/tools/glaze/overview/"
+          variant="outlined">
+          Glaze documentation
+        </Button>
+      </Toolbar>
       <NotesList
         deleteDraft={app.deleteDraft}
         openDraft={app.openDraft}
         openNote={app.openNote}
         state={app.state}
       />
-    </div>
+    </>
   )
 
   let screen
@@ -419,54 +400,82 @@ export default function App() {
   }
 
   return (
-    <div className={classes.root}>
+    <Root>
       <CssBaseline />
-      <AppBar position="fixed" className={classes.appBar}>
+      <AppBar
+        position="fixed"
+        sx={{
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          ml: { sm: `${drawerWidth}px` },
+        }}>
         <Toolbar>
           <IconButton
             color="inherit"
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            className={classes.menuButton}>
+            sx={{ mr: 2, display: { sm: 'none' } }}
+            size="large">
             <MenuIcon />
           </IconButton>
           <Typography className={classes.title} noWrap variant="h6">
             Glaze demo notes app
           </Typography>
-          <Button
-            color="inherit"
-            href="https://developers.ceramic.network/"
-            variant="outlined">
-            Documentation
-          </Button>
+          {app.state.nav.type === 'default' ? null : (
+            <IconButton
+              color="inherit"
+              aria-label="reset"
+              edge="end"
+              onClick={() => {
+                app.reset()
+              }}
+              size="large">
+              <LogoutIcon />
+            </IconButton>
+          )}
         </Toolbar>
       </AppBar>
-      <nav className={classes.drawer} aria-label="notes">
-        <Hidden smUp implementation="css">
-          <Drawer
-            variant="temporary"
-            anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            classes={{ paper: classes.drawerPaper }}
-            ModalProps={{ keepMounted: true }}>
-            {drawer}
-          </Drawer>
-        </Hidden>
-        <Hidden xsDown implementation="css">
-          <Drawer
-            classes={{ paper: classes.drawerPaper }}
-            variant="permanent"
-            open>
-            {drawer}
-          </Drawer>
-        </Hidden>
-      </nav>
-      <main className={classes.content}>
-        <div className={classes.toolbar} />
+      <Box
+        component="nav"
+        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        aria-label="notes">
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            display: { xs: 'block', sm: 'none' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+            },
+          }}>
+          {drawer}
+        </Drawer>
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: 'none', sm: 'block' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+            },
+          }}
+          open>
+          {drawer}
+        </Drawer>
+      </Box>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+        }}>
+        <Toolbar />
         {screen}
-      </main>
-    </div>
+      </Box>
+    </Root>
   )
 }

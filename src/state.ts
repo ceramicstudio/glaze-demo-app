@@ -39,6 +39,14 @@ type NoteState = {
 }
 export type State = Store & (DefaultState | NoteState)
 
+const DEFAULT_STATE: State = {
+  auth: { status: 'pending' },
+  draftStatus: 'unsaved',
+  nav: { type: 'default' },
+  notes: {},
+  placeholderText: '',
+}
+
 type AuthAction = { type: 'auth'; status: AuthStatus }
 type AuthSuccessAction = { type: 'auth success' } & Env
 type NavResetAction = { type: 'nav reset' }
@@ -67,6 +75,7 @@ type NoteSavingStatusAction = {
   docID: string
   status: NoteSavingStatus
 }
+type ResetAction = { type: 'reset' }
 type Action =
   | AuthAction
   | AuthSuccessAction
@@ -79,6 +88,7 @@ type Action =
   | NoteLoadedAction
   | NoteLoadingStatusAction
   | NoteSavingStatusAction
+  | ResetAction
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -91,7 +101,7 @@ function reducer(state: State, action: Action): State {
     case 'auth success': {
       const auth = {
         status: 'done',
-        ceramic: action.ceramic,
+        loader: action.loader,
         model: action.model,
         store: action.store,
       } as AuthenticatedState
@@ -198,29 +208,23 @@ function reducer(state: State, action: Action): State {
         },
       }
     }
+    case 'reset':
+      return DEFAULT_STATE
   }
 }
 
 export function useApp() {
-  const [state, dispatch] = useReducer(reducer, {
-    auth: { status: 'pending' },
-    draftStatus: 'unsaved',
-    nav: { type: 'default' },
-    notes: {},
-    placeholderText: '',
-  })
+  const [state, dispatch] = useReducer(reducer, DEFAULT_STATE)
 
-  const authenticate = useCallback((seed: Uint8Array) => {
+  const authenticate = useCallback(async (seed: Uint8Array) => {
     dispatch({ type: 'auth', status: 'loading' })
-    getEnv(seed).then(
-      (env) => {
-        dispatch({ type: 'auth success', ...env })
-      },
-      (err) => {
-        console.warn('authenticate call failed', err)
-        dispatch({ type: 'auth', status: 'failed' })
-      },
-    )
+    try {
+      const env = await getEnv(seed)
+      dispatch({ type: 'auth success', ...env })
+    } catch (err) {
+      console.warn('authenticate call failed', err)
+      dispatch({ type: 'auth', status: 'failed' })
+    }
   }, [])
 
   const openDraft = useCallback(() => {
@@ -232,66 +236,67 @@ export function useApp() {
   }, [])
 
   const saveDraft = useCallback(
-    (title: string, text: string) => {
+    async (title: string, text: string) => {
       dispatch({ type: 'draft status', status: 'saving' })
       const { model, store } = state.auth as AuthenticatedState
-      Promise.all([
-        model.createTile('Note', { date: new Date().toISOString(), text }),
-        store.get('notes'),
-      ])
-        .then(([doc, notesList]) => {
-          const notes = notesList?.notes ?? []
-          return store
-            .set('notes', {
-              notes: [{ id: doc.id.toUrl(), title }, ...notes],
-            })
-            .then(() => {
-              const docID = doc.id.toString()
-              dispatch({ type: 'draft saved', docID, title, doc })
-            })
+      try {
+        const [doc, notesList] = await Promise.all([
+          model.createTile('Note', { date: new Date().toISOString(), text }),
+          store.get('notes'),
+        ])
+        const notes = notesList?.notes ?? []
+        await store.set('notes', {
+          notes: [...notes, { id: doc.id.toUrl(), title }],
         })
-        .catch((err) => {
-          console.log('failed to save draft', err)
-          dispatch({ type: 'draft status', status: 'failed' })
-        })
+        const docID = doc.id.toString()
+        dispatch({ type: 'draft saved', docID, title, doc })
+      } catch (err) {
+        console.log('failed to save draft', err)
+        dispatch({ type: 'draft status', status: 'failed' })
+      }
     },
     [state.auth],
   )
 
   const openNote = useCallback(
-    (docID: string) => {
+    async (docID: string) => {
       dispatch({ type: 'nav note', docID })
 
       if (state.notes[docID] == null || state.notes[docID].status === 'init') {
-        const { ceramic } = state.auth as AuthenticatedState
-        TileDocument.load<Note>(ceramic, docID).then(
-          (doc) => {
-            dispatch({ type: 'note loaded', docID, doc })
-          },
-          () => {
-            dispatch({
-              type: 'note loading status',
-              docID,
-              status: 'loading failed',
-            })
-          },
-        )
+        const { loader } = state.auth as AuthenticatedState
+        try {
+          const doc = await loader.load<Note>(docID)
+          dispatch({ type: 'note loaded', docID, doc })
+        } catch (err) {
+          console.log('failed to open note', err)
+          dispatch({
+            type: 'note loading status',
+            docID,
+            status: 'loading failed',
+          })
+        }
       }
     },
     [state.auth, state.notes],
   )
 
-  const saveNote = useCallback((doc: TileDocument<Note>, text: string) => {
-    const docID = doc.id.toString()
-    dispatch({ type: 'note saving status', docID, status: 'saving' })
-    doc.update({ date: new Date().toISOString(), text }).then(
-      () => {
+  const saveNote = useCallback(
+    async (doc: TileDocument<Note>, text: string) => {
+      const docID = doc.id.toString()
+      dispatch({ type: 'note saving status', docID, status: 'saving' })
+      try {
+        await doc.update({ date: new Date().toISOString(), text })
         dispatch({ type: 'note saving status', docID, status: 'saved' })
-      },
-      () => {
+      } catch (err) {
+        console.log('failed to save note', err)
         dispatch({ type: 'note saving status', docID, status: 'saving failed' })
-      },
-    )
+      }
+    },
+    [],
+  )
+
+  const reset = useCallback(() => {
+    dispatch({ type: 'reset' })
   }, [])
 
   return {
@@ -301,6 +306,7 @@ export function useApp() {
     openNote,
     saveDraft,
     saveNote,
+    reset,
     state,
   }
 }
