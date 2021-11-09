@@ -1,6 +1,7 @@
 import { CeramicClient } from '@ceramicnetwork/http-client'
 import { DataModel } from '@glazed/datamodel'
 import { DIDDataStore } from '@glazed/did-datastore'
+import { TileLoader } from '@glazed/tile-loader'
 import { DID } from 'dids'
 import { Ed25519Provider } from 'key-did-provider-ed25519'
 import { getResolver } from 'key-did-resolver'
@@ -33,12 +34,15 @@ export type ModelTypes = {
 }
 
 export type Context = {
-  ceramic: CeramicClient
+  loader: TileLoader
   model: DataModel<ModelTypes>
   store: DIDDataStore<ModelTypes>
 }
 
 export type Env = Context & NotesList & { placeholderText: string }
+
+// Use shared cache
+const cache = new Map()
 
 export async function getEnv(seed: Uint8Array): Promise<Env> {
   // Create and authenticate the DID
@@ -52,9 +56,10 @@ export async function getEnv(seed: Uint8Array): Promise<Env> {
   const ceramic = new CeramicClient('http://localhost:7007')
   ceramic.did = did
 
-  // Create the model and store
-  const model = new DataModel<ModelTypes>({ ceramic, model: modelAliases })
-  const store = new DIDDataStore({ ceramic, model })
+  // Create the loader, model and store
+  const loader = new TileLoader({ ceramic, cache })
+  const model = new DataModel<ModelTypes>({ loader, model: modelAliases })
+  const store = new DIDDataStore({ ceramic, loader, model })
 
   // Load the existing notes associated to the DID and the placeholder note
   const [notesList, placeholderNote] = await Promise.all([
@@ -63,7 +68,7 @@ export async function getEnv(seed: Uint8Array): Promise<Env> {
   ])
 
   return {
-    ceramic,
+    loader,
     model,
     store,
     notes: notesList?.notes ?? [],
