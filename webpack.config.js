@@ -1,4 +1,3 @@
-const { ESBuildMinifyPlugin } = require('esbuild-loader')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require('path')
 
@@ -21,11 +20,7 @@ module.exports = {
       },
       {
         test: /\.tsx?$/,
-        loader: 'esbuild-loader',
-        options: {
-          loader: 'tsx',
-          target: 'es2016',
-        },
+        loader: 'swc-loader',
       },
     ],
   },
@@ -34,7 +29,4 @@ module.exports = {
       template: path.resolve(__dirname, 'src', 'index.html'),
     }),
   ],
-  optimization: {
-    minimizer: [new ESBuildMinifyPlugin({ target: 'es2016' })],
-  },
 }

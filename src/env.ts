@@ -6,7 +6,7 @@ import { DID } from 'dids'
 import { Ed25519Provider } from 'key-did-provider-ed25519'
 import { getResolver } from 'key-did-resolver'
 
-import modelAliases from './model.json'
+import aliases from './model.json'
 
 export type Note = {
   date: string
@@ -58,7 +58,7 @@ export async function getEnv(seed: Uint8Array): Promise<Env> {
 
   // Create the loader, model and store
   const loader = new TileLoader({ ceramic, cache })
-  const model = new DataModel<ModelTypes>({ loader, model: modelAliases })
+  const model = new DataModel<ModelTypes>({ loader, aliases })
   const store = new DIDDataStore({ ceramic, loader, model })
 
   // Load the existing notes associated to the DID and the placeholder note
